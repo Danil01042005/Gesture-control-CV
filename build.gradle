@@ -1,0 +1,55 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.6'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'fs.mtuci'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	
+	// JavaFX для GUI
+	implementation 'org.openjfx:javafx-controls:21'
+	implementation 'org.openjfx:javafx-fxml:21'
+	
+	// DJL для YOLO
+	implementation 'ai.djl:api:0.21.0'
+	implementation 'ai.djl.pytorch:pytorch-engine:0.21.0'
+	implementation 'ai.djl.pytorch:pytorch-native-cpu:1.13.1'
+	
+	// OpenCV для камеры
+	implementation 'org.openpnp:opencv:4.8.0-0'
+	
+	// Математические операции
+	implementation 'org.apache.commons:commons-math3:3.6.1'
+	
+	// Тестирование
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
