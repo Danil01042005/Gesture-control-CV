@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'fs.mtuci'
@@ -22,6 +23,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+    maven { url 'https://frcmaven.wpi.edu/artifactory/release/' }
 }
 
 dependencies {
@@ -33,14 +35,15 @@ dependencies {
 	// JavaFX для GUI
 	implementation 'org.openjfx:javafx-controls:21'
 	implementation 'org.openjfx:javafx-fxml:21'
+    implementation 'org.openjfx:javafx-base:21'
 	
 	// DJL для YOLO
-	implementation 'ai.djl:api:0.21.0'
+	implementation 'ai.djl:api:0.31.1'
 	implementation 'ai.djl.pytorch:pytorch-engine:0.21.0'
 	implementation 'ai.djl.pytorch:pytorch-native-cpu:1.13.1'
 	
 	// OpenCV для камеры
-	implementation 'org.openpnp:opencv:4.8.0-0'
+    runtimeOnly 'edu.wpi.first.thirdparty.frc2025.opencv:opencv-java:4.10.0-3'
 	
 	// Математические операции
 	implementation 'org.apache.commons:commons-math3:3.6.1'
