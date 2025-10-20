@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fs.mtuci.gestures.controller.MainWindowController">
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label fx:id="statusLabel" text="Готов к работе!" />
+            <Label fx:id="fpsLabel" text="FPS: --" />
+        </VBox>
+    </top>
+    
+    <center>
+        <ImageView fx:id="cameraPreview" fitWidth="640" fitHeight="480" preserveRatio="true" />
+    </center>
+    
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Button fx:id="startButton" text="Тест камеры" onAction="#onStartButtonClick" />
+            <Button fx:id="liveCameraButton" text="Показать камеру" onAction="#onLiveCameraButtonClick" />
+            <Button fx:id="stopButton" text="Остановка" onAction="#onStopButtonClick" />
+            <Button fx:id="settingsButton" text="Настройки" onAction="#onSettingsButtonClick" />
+        </VBox>
+    </bottom>
 </BorderPane>

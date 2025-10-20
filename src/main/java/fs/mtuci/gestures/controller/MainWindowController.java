@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import org.springframework.stereotype.Component;
+import fs.mtuci.gestures.service.CameraService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -18,6 +19,12 @@ import java.util.ResourceBundle;
 public class MainWindowController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(MainWindowController.class);
+    
+    private final CameraService cameraService;
+    
+    public MainWindowController(CameraService cameraService) {
+        this.cameraService = cameraService;
+    }
 
     @FXML private Button startButton;
     @FXML private Button stopButton;
@@ -59,5 +66,29 @@ public class MainWindowController implements Initializable {
     @FXML
     private void onSettingsButtonClick() {
         statusLabel.setText("Настройки в разработке");
+    }
+    
+    @FXML
+    private void onLiveCameraButtonClick() {
+        statusLabel.setText("Запуск детекции жестов с YOLO...");
+        logger.info("Запуск обработки жестов");
+        
+        try {
+            if (cameraService.initializeCamera()) {
+                statusLabel.setText("✅ Камера запущена - загрузка YOLO модели...");
+                
+                // TODO: Здесь будет загрузка YOLO модели
+                // TODO: Здесь будет детекция рук
+                // TODO: Здесь будет управление курсором
+                
+                statusLabel.setText("⚠️ YOLO модель не загружена - в разработке");
+                
+            } else {
+                statusLabel.setText("❌ Ошибка инициализации камеры");
+            }
+        } catch (Exception e) {
+            statusLabel.setText("❌ Ошибка: " + e.getMessage());
+            logger.error("Ошибка запуска обработки жестов", e);
+        }
     }
 }
