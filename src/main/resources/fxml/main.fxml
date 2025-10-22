@@ -1,28 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.image.ImageView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fs.mtuci.gestures.controller.MainWindowController">
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="fs.mtuci.gestures.controller.MainWindowController"
+            stylesheets="@style.css"
+            style="-fx-background-color: linear-gradient(to bottom right, #0d0d1a, #12122b);">
+
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <top>
-        <VBox spacing="10" style="-fx-padding: 10;">
-            <Label fx:id="statusLabel" text="Готов к работе!" />
-            <Label fx:id="fpsLabel" text="FPS: --" />
-        </VBox>
+        <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 20;">
+            <ImageView fitHeight="32" fitWidth="32" pickOnBounds="true" preserveRatio="true">
+
+            </ImageView>
+            <VBox>
+                <Label text="Gesture Control" style="-fx-text-fill: #a8a6ff; -fx-font-size: 20px; -fx-font-weight: bold;" />
+                <Label text="Управление жестами" style="-fx-text-fill: #8f8f9f;" />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="📷 Камера выключена" style="-fx-text-fill: #8f8f9f;" />
+        </HBox>
     </top>
-    
+
+    <!-- ЦЕНТРАЛЬНАЯ ОБЛАСТЬ -->
     <center>
-        <ImageView fx:id="cameraPreview" fitWidth="640" fitHeight="480" preserveRatio="true" />
+        <HBox spacing="30" style="-fx-padding: 0 20 20 20;">
+            <!-- Левая панель статуса -->
+            <VBox spacing="20" style="-fx-background-color: rgba(255,255,255,0.05);
+                                      -fx-padding: 20;
+                                      -fx-background-radius: 16;
+                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 0);"
+                  prefWidth="280">
+
+                <Label text="Статус" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
+
+                <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 12;">
+                    <Label text="Распознанный жест" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="gestureLabel" text="Указательный палец" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+
+                <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 12;">
+                    <Label text="Назначенное действие" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="actionLabel" text="Нажатие ЛКМ" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+
+                <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 12;">
+                    <Label text="Активность" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="statusLabel" text="Ожидание" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+
+                <ToggleButton fx:id="pauseButton" text="⏸ Пауза"
+                              style="-fx-background-radius: 20;
+                                     -fx-background-color: rgba(255,255,255,0.08);
+                                     -fx-text-fill: white;"
+                              maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Область камеры -->
+            <StackPane style="-fx-background-color: rgba(255,255,255,0.03);
+                               -fx-background-radius: 16;
+                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 0);"
+                       prefWidth="720" prefHeight="480">
+                <ImageView fx:id="cameraPreview" fitWidth="720" fitHeight="480" preserveRatio="true"/>
+            </StackPane>
+        </HBox>
     </center>
-    
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ -->
     <bottom>
-        <VBox spacing="10" style="-fx-padding: 10;">
-            <Button fx:id="startButton" text="Тест камеры" onAction="#onStartButtonClick" />
-            <Button fx:id="liveCameraButton" text="Показать камеру" onAction="#onLiveCameraButtonClick" />
-            <Button fx:id="stopButton" text="Остановка" onAction="#onStopButtonClick" />
-            <Button fx:id="settingsButton" text="Настройки" onAction="#onSettingsButtonClick" />
-        </VBox>
+        <HBox alignment="CENTER_RIGHT" spacing="20" style="-fx-padding: 20;">
+            <Button fx:id="startButton"
+                    text="▶ Запустить распознавание"
+                    onAction="#onLiveCameraButtonClick"
+                    styleClass="primary-button" />
+
+            <Button fx:id="stopButton"
+                    text="⏹ Остановить распознавание"
+                    onAction="#onStopButtonClick"
+                    styleClass="secondary-button" />
+
+            <Button fx:id="settingsButton"
+                    text="⚙ Настройки"
+                    onAction="#onSettingsButtonClick"
+                    styleClass="secondary-button" />
+        </HBox>
     </bottom>
+
 </BorderPane>
