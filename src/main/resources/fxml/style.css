@@ -1,0 +1,24 @@
+.primary-button {
+    -fx-background-color: linear-gradient(to right, #6f5bff, #7df9ff);
+    -fx-background-radius: 25;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-effect: dropshadow(gaussian, rgba(111,91,255,0.5), 10, 0.3, 0, 0);
+}
+
+.primary-button:hover {
+    -fx-opacity: 0.85;
+}
+
+.secondary-button {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-radius: 25;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+}
+
+.secondary-button:hover {
+    -fx-background-color: rgba(255,255,255,0.2);
+}
