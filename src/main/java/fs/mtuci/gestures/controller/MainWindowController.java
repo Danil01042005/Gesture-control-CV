@@ -12,8 +12,12 @@ import javafx.scene.image.ImageView;
 import org.springframework.stereotype.Component;
 import fs.mtuci.gestures.service.CameraService;
 import fs.mtuci.gestures.service.PythonGestureService;
+import fs.mtuci.gestures.service.SystemControlService;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 
@@ -26,10 +30,17 @@ public class MainWindowController implements Initializable {
     private final CameraService cameraService;
     
     private final PythonGestureService pythonGestureService;
+    private final SystemControlService systemControlService;
 
-    public MainWindowController(CameraService cameraService, PythonGestureService pythonGestureService) {
+    private static final long ACTION_COOLDOWN_MS = 750;
+    private final Map<String, Long> actionTimestamps = new HashMap<>();
+
+    public MainWindowController(CameraService cameraService,
+                                PythonGestureService pythonGestureService,
+                                SystemControlService systemControlService) {
         this.cameraService = cameraService;
         this.pythonGestureService = pythonGestureService;
+        this.systemControlService = systemControlService;
     }
 
     @FXML private Button startButton;
@@ -95,7 +106,10 @@ public class MainWindowController implements Initializable {
      * Обрабатывает различные жесты
      */
     private void handleGesture(String gesture) {
-        switch (gesture.toLowerCase()) {
+        if (gesture == null) {
+            return;
+        }
+        switch (gesture.toLowerCase(Locale.ROOT)) {
             case "palm":
                 actionLabel.setText("Действие: Стоп");
                 break;
@@ -107,6 +121,19 @@ public class MainWindowController implements Initializable {
                 break;
             case "peace":
                 actionLabel.setText("Действие: Пауза");
+                break;
+            case "big_finger_top":
+                actionLabel.setText("Действие: Громкость +");
+                triggerAction("volume_up", systemControlService::volumeUp);
+                break;
+            case "big_finger_bottom":
+            case "big_finger_down":
+                actionLabel.setText("Действие: Громкость −");
+                triggerAction("volume_down", systemControlService::volumeDown);
+                break;
+            case "palm_mute":
+                actionLabel.setText("Действие: Mute");
+                triggerAction("volume_mute", systemControlService::volumeMute);
                 break;
             default:
                 actionLabel.setText("Действие: " + gesture);
@@ -123,5 +150,21 @@ public class MainWindowController implements Initializable {
     @FXML private Label gestureLabel;
     @FXML private Label actionLabel;
     @FXML private ToggleButton pauseButton;
+
+    private void triggerAction(String key, Runnable action) {
+        long now = System.currentTimeMillis();
+        Long last = actionTimestamps.get(key);
+        if (last == null || now - last >= ACTION_COOLDOWN_MS) {
+            actionTimestamps.put(key, now);
+            try {
+                action.run();
+                logger.info("Выполнено действие {}", key);
+            } catch (Exception ex) {
+                logger.error("Ошибка при выполнении действия {}", key, ex);
+            }
+        } else {
+            logger.debug("Пропущено действие {} (cooldown)", key);
+        }
+    }
 
 }

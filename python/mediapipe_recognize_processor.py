@@ -1,3 +1,4 @@
+import os
 import mediapipe as mp
 import numpy as np
 import cv2
@@ -9,7 +10,10 @@ import time
 
 
 class GestureRecognizer:
-    def __init__(self, model_path='Gesture-control-CV\python\gesture_classifier_rf.pkl'):
+    def __init__(self, model_path=None):
+        if model_path is None:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            model_path = os.path.join(script_dir, 'gesture_classifier_rf.pkl')
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
             static_image_mode=False,
@@ -102,10 +106,9 @@ class GestureRecognizer:
 
 # Использование
 if __name__ == "__main__":
-    import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(script_dir, 'gesture_classifier_rf.pkl')
-    
+
     recognizer = GestureRecognizer(model_path)
     recognizer.recognize()
     
