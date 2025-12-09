@@ -2,6 +2,7 @@ package fs.mtuci.gestures;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+<<<<<<< HEAD
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.effect.DropShadow;
@@ -9,12 +10,18 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+=======
+import javafx.scene.Scene;
+>>>>>>> origin/feature/andrey
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+<<<<<<< HEAD
 import java.util.Random;
 
+=======
+>>>>>>> origin/feature/andrey
 public class GestureControlApp extends Application {
 
     private static ConfigurableApplicationContext springContext;
@@ -23,6 +30,7 @@ public class GestureControlApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);
+<<<<<<< HEAD
 
         Parent root = fxmlLoader.load();
         Scene scene = new Scene(root);
@@ -108,6 +116,14 @@ public class GestureControlApp extends Application {
         return shape;
     }
 
+=======
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        primaryStage.setTitle("Gesture Control - Управление жестами");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+>>>>>>> origin/feature/andrey
     @Override
     public void stop() throws Exception {
         springContext.close();
@@ -117,4 +133,8 @@ public class GestureControlApp extends Application {
         springContext = SpringApplication.run(GesturesApplication.class, args);
         launch(args);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/feature/andrey

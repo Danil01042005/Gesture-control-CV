@@ -39,6 +39,20 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+<<<<<<< HEAD
+=======
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+.venv/
+venv/
+env/
+
+>>>>>>> origin/feature/andrey
 # Eclipse
 .apt_generated
 .classpath

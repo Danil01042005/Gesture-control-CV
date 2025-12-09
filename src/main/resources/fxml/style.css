@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Общий фон */
 .root-pane {
     -fx-background-color: linear-gradient(to bottom right, #0d0d1a, #12122b);
@@ -110,6 +111,15 @@
     -fx-min-width: 300;
     -fx-min-height: 65;
     -fx-font-size: 18;
+=======
+.primary-button {
+    -fx-background-color: linear-gradient(to right, #6f5bff, #7df9ff);
+    -fx-background-radius: 25;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-effect: dropshadow(gaussian, rgba(111,91,255,0.5), 10, 0.3, 0, 0);
+>>>>>>> origin/feature/andrey
 }
 
 .primary-button:hover {
@@ -121,9 +131,13 @@
     -fx-background-radius: 25;
     -fx-text-fill: white;
     -fx-font-weight: bold;
+<<<<<<< HEAD
     -fx-min-height: 65;
     -fx-min-width: 160;
     -fx-font-size: 18;
+=======
+    -fx-padding: 10 20;
+>>>>>>> origin/feature/andrey
 }
 
 .secondary-button:hover {

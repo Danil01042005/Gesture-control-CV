@@ -37,7 +37,10 @@ dependencies {
 	implementation 'org.openjfx:javafx-fxml:21'
     implementation 'org.openjfx:javafx-base:21'
     implementation 'org.openjfx:javafx-graphics:21'
+<<<<<<< HEAD
 	implementation 'org.openjfx:javafx-swing:21'
+=======
+>>>>>>> origin/feature/andrey
 	
 	// DJL для YOLO
 	implementation 'ai.djl:api:0.31.1'
@@ -53,6 +56,11 @@ dependencies {
 	// Тестирование
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+<<<<<<< HEAD
+=======
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+>>>>>>> origin/feature/andrey
 }
 
 tasks.named('test') {
