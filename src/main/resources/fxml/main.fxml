@@ -4,88 +4,6 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<<<<<<< HEAD
-<StackPane xmlns="http://javafx.com/javafx/21"
-           xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="fs.mtuci.gestures.controller.MainWindowController"
-           stylesheets="@style.css"
-           styleClass="root-pane">
-
-    <!-- Основной контент -->
-    <BorderPane fx:id="mainContent">
-        <top>
-            <HBox styleClass="top-bar-container">
-                <HBox spacing="20" alignment="CENTER_LEFT" styleClass="top-bar">
-                    <ImageView fitHeight="32" fitWidth="32" pickOnBounds="true" preserveRatio="true"/>
-                    <VBox>
-                        <Label text="Gesture Control" styleClass="app-title"/>
-                        <Label text="Управление жестами" styleClass="app-subtitle"/>
-                    </VBox>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="📷 Камера выключена" styleClass="camera-status"/>
-                </HBox>
-            </HBox>
-        </top>
-
-        <center>
-            <HBox styleClass="center-area">
-                <VBox styleClass="status-panel">
-                    <Label text="Статус" styleClass="section-title"/>
-
-                    <VBox styleClass="info-box">
-                        <Label text="Распознанный жест" styleClass="info-label"/>
-                        <Label fx:id="gestureLabel" text="Указательный палец" styleClass="info-value"/>
-                    </VBox>
-
-                    <VBox styleClass="info-box">
-                        <Label text="Назначенное действие" styleClass="info-label"/>
-                        <Label fx:id="actionLabel" text="Нажатие ЛКМ" styleClass="info-value"/>
-                    </VBox>
-
-                    <VBox styleClass="info-box">
-                        <Label text="Активность" styleClass="info-label"/>
-                        <Label fx:id="statusLabel" text="Ожидание" styleClass="info-value"/>
-                    </VBox>
-
-                    <ToggleButton fx:id="pauseButton"
-                                  text="⏸ Пауза"
-                                  styleClass="pause-button"
-                                  maxWidth="Infinity"/>
-                </VBox>
-
-                <!-- Окно для камеры -->
-                <StackPane styleClass="camera-container">
-                    <ImageView fx:id="cameraPreview"
-                               preserveRatio="false"
-                               fitWidth="1010"
-                               fitHeight="570"
-                               smooth="true"/>
-                </StackPane>
-            </HBox>
-        </center>
-
-        <bottom>
-            <HBox styleClass="bottom-bar-container">
-                <HBox spacing="20" styleClass="bottom-bar">
-                    <Button fx:id="startButton"
-                            text="▶ Запустить распознавание"
-                            onAction="#onLiveCameraButtonClick"
-                            styleClass="primary-button"/>
-                    <Button fx:id="stopButton"
-                            text="⏹ Остановить распознавание"
-                            onAction="#onStopButtonClick"
-                            styleClass="secondary-button"/>
-                    <Button fx:id="settingsButton"
-                            text="⚙ Настройки"
-                            onAction="#onSettingsButtonClick"
-                            styleClass="secondary-button"/>
-                </HBox>
-            </HBox>
-        </bottom>
-    </BorderPane>
-</StackPane>
-
-=======
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="fs.mtuci.gestures.controller.MainWindowController"
@@ -172,4 +90,3 @@
     </bottom>
 
 </BorderPane>
->>>>>>> origin/feature/andrey

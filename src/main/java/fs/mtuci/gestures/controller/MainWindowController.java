@@ -2,10 +2,7 @@ package fs.mtuci.gestures.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/feature/andrey
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -14,29 +11,16 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
 import org.springframework.stereotype.Component;
 import fs.mtuci.gestures.service.CameraService;
-<<<<<<< HEAD
-
-=======
 import fs.mtuci.gestures.service.PythonGestureService;
->>>>>>> origin/feature/andrey
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/feature/andrey
 @Component
 public class MainWindowController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(MainWindowController.class);
-<<<<<<< HEAD
-    private final CameraService cameraService;
-
-    public MainWindowController(CameraService cameraService) {
-        this.cameraService = cameraService;
-=======
 
     
     private final CameraService cameraService;
@@ -46,23 +30,14 @@ public class MainWindowController implements Initializable {
     public MainWindowController(CameraService cameraService, PythonGestureService pythonGestureService) {
         this.cameraService = cameraService;
         this.pythonGestureService = pythonGestureService;
->>>>>>> origin/feature/andrey
     }
 
     @FXML private Button startButton;
     @FXML private Button stopButton;
     @FXML private Button settingsButton;
-<<<<<<< HEAD
-    @FXML private ImageView cameraPreview;
-    @FXML private Label statusLabel;
-    @FXML private Label gestureLabel;
-    @FXML private Label actionLabel;
-    @FXML private ToggleButton pauseButton;
-=======
 
     @FXML private ImageView cameraPreview;
     @FXML private Label statusLabel;
->>>>>>> origin/feature/andrey
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -72,24 +47,6 @@ public class MainWindowController implements Initializable {
     }
 
     @FXML
-<<<<<<< HEAD
-    private void onLiveCameraButtonClick() {
-        statusLabel.setText("Запуск камеры...");
-        logger.info("Запуск камеры");
-
-        try {
-            if (cameraService.initializeCamera()) {
-                cameraService.startCameraStream(cameraPreview);
-                statusLabel.setText("Камера активна");
-                startButton.setDisable(true);
-                stopButton.setDisable(false);
-            } else {
-                statusLabel.setText("Ошибка: камера не найдена");
-            }
-        } catch (Exception e) {
-            statusLabel.setText("Ошибка запуска камеры");
-            logger.error("Ошибка при запуске камеры", e);
-=======
     private void onStartButtonClick() {
         statusLabel.setText("Запуск распознавания жестов...");
         logger.info("Запуск обработки жестов");
@@ -118,21 +75,11 @@ public class MainWindowController implements Initializable {
         } catch (Exception e) {
             statusLabel.setText("Ошибка запуска: " + e.getMessage());
             logger.error("Ошибка при запуске обработки", e);
->>>>>>> origin/feature/andrey
         }
     }
 
     @FXML
     private void onStopButtonClick() {
-<<<<<<< HEAD
-        logger.info("Остановка камеры");
-        cameraService.stopCamera();
-        statusLabel.setText("Камера остановлена");
-        startButton.setDisable(false);
-        stopButton.setDisable(true);
-    }
-
-=======
         statusLabel.setText("Остановка распознавания жестов...");
         logger.info("Остановка управления жестами");
         
@@ -168,17 +115,13 @@ public class MainWindowController implements Initializable {
 
 
 
->>>>>>> origin/feature/andrey
     @FXML
     private void onSettingsButtonClick() {
         statusLabel.setText("Настройки в разработке");
     }
 
-<<<<<<< HEAD
-=======
     @FXML private Label gestureLabel;
     @FXML private Label actionLabel;
     @FXML private ToggleButton pauseButton;
 
->>>>>>> origin/feature/andrey
 }
