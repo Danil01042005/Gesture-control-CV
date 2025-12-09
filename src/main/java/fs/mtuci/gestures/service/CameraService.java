@@ -1,115 +1,77 @@
 package fs.mtuci.gestures.service;
 
-import org.opencv.videoio.Videoio;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
-import javafx.scene.image.PixelFormat;
+import javafx.scene.image.ImageView;
+import javafx.embed.swing.SwingFXUtils;
+import org.opencv.core.Mat;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
+import java.awt.image.BufferedImage;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import jakarta.annotation.PreDestroy;
+
+import org.opencv.core.CvType;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
 
 @Service
 public class CameraService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CameraService.class);
+    //инициализация OpenCV
+    static {
+        System.loadLibrary(org.opencv.core.Core.NATIVE_LIBRARY_NAME);
+    }
 
-    private VideoCapture capture;
-    private Mat bgr;
-    private Mat rgb;
-    private int width = 640;
-    private int height = 480;
-    private int cameraIndex = 0;
-    private boolean opencvLoaded = false;
+    private VideoCapture camera;
+    private Thread cameraThread;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public boolean initializeCamera() {
-        try {
-            if (!opencvLoaded) {
-                System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-                opencvLoaded = true;
-                logger.info("OpenCV загружен успешно");
-            }
+        if (camera == null) {
+            camera = new VideoCapture(0);
+        }
+        return camera.isOpened();
+    }
 
-            if (bgr == null) bgr = new Mat();
-            if (rgb == null) rgb = new Mat();
-            
-            capture = new VideoCapture();
-            if(!capture.open(cameraIndex)) {
-                logger.error("Не удалось открыть камеру №" , cameraIndex);
-                return false;
+    public void startCameraStream(ImageView imageView) {
+        if (running.get()) return;
+
+        running.set(true);
+        cameraThread = new Thread(() -> {
+            Mat frame = new Mat();
+            while (running.get() && camera.isOpened()) {
+                if (camera.read(frame)) {
+                    Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2RGB);
+                    Image image = mat2Image(frame);
+                    Platform.runLater(() -> imageView.setImage(image));
+                }
             }
-            capture.set(Videoio.CAP_PROP_FRAME_WIDTH, width);
-            capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, height);
-            logger.info("Камера открыта: {}x{}", width, height);
-            return true;
-        } catch (Throwable t){
-            logger.error("Ошибка инициализации OpenCV/камеры", t);
-            return false;
+            frame.release();
+        });
+        cameraThread.setDaemon(true);
+        cameraThread.start();
+    }
+
+    public void stopCamera() {
+        running.set(false);
+        if (camera != null && camera.isOpened()) {
+            camera.release();
         }
     }
 
-    public Mat captureFrame() {
-        if (capture == null || !capture.isOpened()) {
-            logger.error("Камера не инициализирована");
-            return null;
-        }
-        if (!capture.read(bgr) || bgr.empty()) {
-            logger.warn("Кадр не получен");
-            return null;
-        }
-        return bgr;
+    private Image mat2Image(Mat frame) {
+        MatOfByte buffer = new MatOfByte();
+        Imgcodecs.imencode(".png", frame, buffer);
+        return new Image(new java.io.ByteArrayInputStream(buffer.toArray()));
     }
 
-    public Image toFxImage(Mat matBgr) {
-        if (matBgr == null || matBgr.empty()) return null;
-
-        Imgproc.cvtColor(matBgr, rgb, Imgproc.COLOR_BGR2RGB);
-        int cols = rgb.cols();
-        int rows = rgb.rows();
-        int channels = rgb.channels();
-        int bufferSize = cols * rows * channels;
-        byte[] buffer = new byte[bufferSize];
-        rgb.get(0, 0, buffer);
-        WritableImage image = new WritableImage(cols, rows);
-        PixelWriter pw = image.getPixelWriter();
-        pw.setPixels(0, 0, cols, rows,
-                PixelFormat.getByteRgbInstance(),
-                buffer, 0, cols * channels
-        );
-        return image;
+    @PreDestroy
+    public void cleanup() {
+        stopCamera();
     }
-
-    public boolean isOpened() {
-        return capture != null && capture.isOpened();
-    }
-
-    public void release() {
-        try {
-            if (capture != null) {
-                capture.release();
-                capture = null;
-            }
-            if (bgr != null) {
-                bgr.release();
-                bgr = null;
-            }
-            if (rgb != null) {
-                rgb.release();
-                rgb = null;
-            }
-            logger.info("Камера и ресурсы освобождены");
-        } catch (Exception e) {
-            logger.warn("Ошибка при освобождении ресурсов", e);
-        }
-    }
-
-    public void setCameraIndex(int cameraIndex) { this.cameraIndex = cameraIndex; }
-    public void setResolution(int width, int height) { this.width = width; this.height = height; }
 }

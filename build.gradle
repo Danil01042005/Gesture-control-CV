@@ -37,6 +37,7 @@ dependencies {
 	implementation 'org.openjfx:javafx-fxml:21'
     implementation 'org.openjfx:javafx-base:21'
     implementation 'org.openjfx:javafx-graphics:21'
+	implementation 'org.openjfx:javafx-swing:21'
 	
 	// DJL для YOLO
 	implementation 'ai.djl:api:0.31.1'
