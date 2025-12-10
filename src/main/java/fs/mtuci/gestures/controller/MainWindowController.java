@@ -7,10 +7,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.springframework.stereotype.Component;
-import fs.mtuci.gestures.service.CameraService;
 import fs.mtuci.gestures.service.PythonGestureService;
 
 import java.net.URL;
@@ -22,106 +27,194 @@ public class MainWindowController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(MainWindowController.class);
 
-    
-    private final CameraService cameraService;
-    
     private final PythonGestureService pythonGestureService;
 
-    public MainWindowController(CameraService cameraService, PythonGestureService pythonGestureService) {
-        this.cameraService = cameraService;
+    private boolean isRecognitionRunning = false;
+
+    private double xOffset = 0;
+    private double yOffset = 0;
+
+    private Image playIcon;
+    private Image stopIcon;
+
+    public MainWindowController(PythonGestureService pythonGestureService) {
         this.pythonGestureService = pythonGestureService;
     }
 
-    @FXML private Button startButton;
-    @FXML private Button stopButton;
-    @FXML private Button settingsButton;
-
-    @FXML private ImageView cameraPreview;
+    @FXML private Button controlButton;
     @FXML private Label statusLabel;
+    @FXML private Label gestureLabel;
+    @FXML private Label actionLabel;
+    @FXML private HBox titleBar;
+    @FXML private Button minimizeButton;
+    @FXML private Button closeButton;
+    @FXML private BorderPane borderPane;
+    @FXML private ImageView controlButtonIcon;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        statusLabel.setText("Готов к работе!");
-        startButton.setDisable(false);
-        stopButton.setDisable(true);
+        loadIcons();
+
+        updateUIForStoppedState();
+
+        setupWindowDragging();
+
+        setupRoundedCorners();
+
+        controlButton.setFocusTraversable(false);
+    }
+
+    private void loadIcons() {
+        try {
+            playIcon = new Image(
+                    getClass().getResourceAsStream("/images/play-button.png"));
+
+            stopIcon = new Image(
+                    getClass().getResourceAsStream("/images/pause-button.png"));
+
+        } catch (Exception e) {
+            logger.error("Ошибка загрузки иконок", e);
+        }
+    }
+
+    private void setupWindowDragging() {
+        titleBar.setOnMousePressed((MouseEvent event) -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+
+        titleBar.setOnMouseDragged((MouseEvent event) -> {
+            Stage stage = (Stage) titleBar.getScene().getWindow();
+            stage.setX(event.getScreenX() - xOffset);
+            stage.setY(event.getScreenY() - yOffset);
+        });
+    }
+
+    private void setupRoundedCorners() {
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(borderPane.widthProperty());
+        clip.heightProperty().bind(borderPane.heightProperty());
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        borderPane.setClip(clip);
     }
 
     @FXML
-    private void onStartButtonClick() {
-        statusLabel.setText("Запуск распознавания жестов...");
-        logger.info("Запуск обработки жестов");
-        
+    private void minimizeWindow() {
+        Stage stage = (Stage) minimizeButton.getScene().getWindow();
+        stage.setIconified(true);
+    }
+
+    @FXML
+    private void closeWindow() {
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    @FXML
+    private void onControlButtonClick() {
+        if (!isRecognitionRunning) {
+            startGestureRecognition();
+        } else {
+            stopGestureRecognition();
+        }
+    }
+
+    private void startGestureRecognition() {
+        statusLabel.setText("Запуск распознавания...");
+        logger.info("Запуск распознавания жестов");
+
         try {
             boolean started = pythonGestureService.startGestureRecognition(gestureResult -> {
-                // Этот код выполняется при каждом распознанном жесте
                 javafx.application.Platform.runLater(() -> {
                     gestureLabel.setText(gestureResult.toString());
                     statusLabel.setText("Распознавание активно");
                     logger.info("Распознан жест: {}", gestureResult);
-                    
-                    // Здесь можно добавить действия для разных жестов
+
                     handleGesture(gestureResult.getGesture());
                 });
             });
-            
+
             if (started) {
-                startButton.setDisable(true);
-                stopButton.setDisable(false);
-                statusLabel.setText("Распознавание жестов запущено!");
+                isRecognitionRunning = true;
+                updateUIForRunningState();
+                statusLabel.setText("Распознавание запущено");
+                logger.info("Распознавание жестов успешно запущено");
             } else {
-                statusLabel.setText("Ошибка запуска Python процесса");
+                statusLabel.setText("Ошибка запуска процесса");
+                logger.error("Не удалось запустить Python процесс распознавания");
             }
-            
+
         } catch (Exception e) {
-            statusLabel.setText("Ошибка запуска: " + e.getMessage());
-            logger.error("Ошибка при запуске обработки", e);
+            statusLabel.setText("Ошибка: " + e.getMessage());
+            logger.error("Ошибка при запуске распознавания", e);
         }
     }
 
-    @FXML
-    private void onStopButtonClick() {
-        statusLabel.setText("Остановка распознавания жестов...");
-        logger.info("Остановка управления жестами");
-        
+    private void stopGestureRecognition() {
+        statusLabel.setText("Остановка распознавания...");
+        logger.info("Остановка распознавания жестов");
+
         pythonGestureService.stopGestureRecognition();
-        
-        startButton.setDisable(false);
-        stopButton.setDisable(true);
-        gestureLabel.setText("—");
+
+        isRecognitionRunning = false;
+        updateUIForStoppedState();
+
         statusLabel.setText("Распознавание остановлено");
+        logger.info("Распознавание жестов остановлено");
     }
 
-    /**
-     * Обрабатывает различные жесты
-     */
     private void handleGesture(String gesture) {
+        String action;
         switch (gesture.toLowerCase()) {
             case "palm":
-                actionLabel.setText("Действие: Стоп");
+                action = "Стоп / Отмена";
                 break;
             case "fist":
-                actionLabel.setText("Действие: Клик");
+                action = "Клик / Выбор";
                 break;
             case "thumb_up":
-                actionLabel.setText("Действие: Одобрено");
+                action = "Одобрено / Да";
                 break;
             case "peace":
-                actionLabel.setText("Действие: Пауза");
+                action = "Пауза / Ожидание";
+                break;
+            case "pointing":
+                action = "Наведение курсора";
                 break;
             default:
-                actionLabel.setText("Действие: " + gesture);
+                action = "Жест: " + gesture;
+        }
+        actionLabel.setText(action);
+    }
+
+    private void updateUIForStoppedState() {
+        if (playIcon != null) {
+            controlButtonIcon.setImage(playIcon);
+        }
+
+        controlButton.setText("Запустить распознавание");
+        controlButton.getStyleClass().remove("stop-button");
+        controlButton.getStyleClass().add("primary-button");
+        statusLabel.setText("Ожидание запуска");
+        gestureLabel.setText("—");
+        actionLabel.setText("—");
+    }
+
+    private void updateUIForRunningState() {
+        if (stopIcon != null) {
+            controlButtonIcon.setImage(stopIcon);
+        }
+
+        controlButton.setText("Остановить распознавание");
+        controlButton.getStyleClass().remove("primary-button");
+        controlButton.getStyleClass().add("stop-button");
+        statusLabel.setText("Распознавание активно");
+    }
+
+    public void shutdown() {
+        if (isRecognitionRunning) {
+            stopGestureRecognition();
         }
     }
-
-
-
-    @FXML
-    private void onSettingsButtonClick() {
-        statusLabel.setText("Настройки в разработке");
-    }
-
-    @FXML private Label gestureLabel;
-    @FXML private Label actionLabel;
-    @FXML private ToggleButton pauseButton;
-
 }
