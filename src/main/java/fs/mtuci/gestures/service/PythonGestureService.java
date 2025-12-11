@@ -36,7 +36,7 @@ public class PythonGestureService {
         try {
             // Путь к Python интерпретатору из venv
             String pythonPath = findPythonExecutable();
-            String scriptPath = "python/mediapipe_recognize_processor.py";
+            String scriptPath = "python/processor.py";
             
             logger.info("Запуск Python скрипта: {} с интерпретатором: {}", scriptPath, pythonPath);
             
@@ -96,15 +96,37 @@ public class PythonGestureService {
                     try {
                         JsonNode node = objectMapper.readTree(line);
                         
+                        // Проверяем наличие всех необходимых полей
+                        if (!node.has("gesture") || !node.has("confidence") || !node.has("timestamp")) {
+                            logger.warn("Неполный JSON от Python: {}", line);
+                            continue;
+                        }
+                        
                         String gesture = node.get("gesture").asText();
+                        
+                        // Проверяем, что жест не пустой
+                        if (gesture == null || gesture.trim().isEmpty()) {
+                            logger.debug("Пустой жест, пропускаем");
+                            continue;
+                        }
+                        
                         double confidence = node.get("confidence").asDouble();
-                        long timestamp = node.get("timestamp").asLong();
+                        
+                        // timestamp может быть как double (time.time()) или long
+                        long timestamp;
+                        if (node.get("timestamp").isDouble()) {
+                            timestamp = (long) (node.get("timestamp").asDouble() * 1000); // конвертируем в миллисекунды
+                        } else {
+                            timestamp = node.get("timestamp").asLong();
+                        }
                         
                         GestureResult result = new GestureResult(gesture, confidence, timestamp);
                         
                         // Вызываем callback только для уверенных распознаваний
-                        if (confidence > 70.0) {
+                        if (confidence > 99.0) {
                             callback.accept(result);
+                        } else {
+                            logger.debug("Низкая уверенность ({}), пропускаем жест: {}", confidence, gesture);
                         }
                         
                     } catch (Exception e) {
