@@ -17,7 +17,7 @@ public class PythonGestureService {
 
     private static final Logger logger = LoggerFactory.getLogger(PythonGestureService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     private Process pythonProcess;
     private Thread readerThread;
     private volatile boolean running = false;
@@ -36,25 +36,25 @@ public class PythonGestureService {
         try {
             // Путь к Python интерпретатору из venv
             String pythonPath = findPythonExecutable();
-            String scriptPath = "python/mediapipe_recognize_processor.py";
-            
+            String scriptPath = "python/processor.py";
+
             logger.info("Запуск Python скрипта: {} с интерпретатором: {}", scriptPath, pythonPath);
-            
+
             ProcessBuilder pb = new ProcessBuilder(pythonPath, scriptPath);
             pb.directory(new File(System.getProperty("user.dir")));
             pb.redirectErrorStream(true);
-            
+
             pythonProcess = pb.start();
             running = true;
-            
+
             // Читаем вывод Python в отдельном потоке
             readerThread = new Thread(() -> readPythonOutput(onGestureDetected));
             readerThread.setDaemon(true);
             readerThread.start();
-            
+
             logger.info("Python процесс успешно запущен");
             return true;
-            
+
         } catch (IOException e) {
             logger.error("Ошибка запуска Python процесса", e);
             return false;
@@ -66,7 +66,7 @@ public class PythonGestureService {
      */
     public void stopGestureRecognition() {
         running = false;
-        
+
         if (pythonProcess != null && pythonProcess.isAlive()) {
             pythonProcess.destroy();
             try {
@@ -76,7 +76,7 @@ public class PythonGestureService {
             }
             logger.info("Python процесс остановлен");
         }
-        
+
         pythonProcess = null;
     }
 
@@ -86,27 +86,49 @@ public class PythonGestureService {
     private void readPythonOutput(Consumer<GestureResult> callback) {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(pythonProcess.getInputStream()))) {
-            
+
             String line;
             while (running && (line = reader.readLine()) != null) {
                 logger.debug("Python output: {}", line);
-                
+
                 // Пытаемся распарсить JSON
                 if (line.trim().startsWith("{")) {
                     try {
                         JsonNode node = objectMapper.readTree(line);
-                        
-                        String gesture = node.get("gesture").asText();
-                        double confidence = node.get("confidence").asDouble();
-                        long timestamp = node.get("timestamp").asLong();
-                        
-                        GestureResult result = new GestureResult(gesture, confidence, timestamp);
-                        
-                        // Вызываем callback только для уверенных распознаваний
-                        if (confidence > 70.0) {
-                            callback.accept(result);
+
+                        // Проверяем наличие всех необходимых полей
+                        if (!node.has("gesture") || !node.has("confidence") || !node.has("timestamp")) {
+                            logger.warn("Неполный JSON от Python: {}", line);
+                            continue;
                         }
-                        
+
+                        String gesture = node.get("gesture").asText();
+
+                        // Проверяем, что жест не пустой
+                        if (gesture == null || gesture.trim().isEmpty()) {
+                            logger.debug("Пустой жест, пропускаем");
+                            continue;
+                        }
+
+                        double confidence = node.get("confidence").asDouble();
+
+                        // timestamp может быть как double (time.time()) или long
+                        long timestamp;
+                        if (node.get("timestamp").isDouble()) {
+                            timestamp = (long) (node.get("timestamp").asDouble() * 1000); // конвертируем в миллисекунды
+                        } else {
+                            timestamp = node.get("timestamp").asLong();
+                        }
+
+                        GestureResult result = new GestureResult(gesture, confidence, timestamp);
+
+                        // Вызываем callback только для уверенных распознаваний
+                        if (confidence > 99.0) {
+                            callback.accept(result);
+                        } else {
+                            logger.debug("Низкая уверенность ({}), пропускаем жест: {}", confidence, gesture);
+                        }
+
                     } catch (Exception e) {
                         logger.warn("Ошибка парсинга JSON: {}", line, e);
                     }
@@ -131,7 +153,7 @@ public class PythonGestureService {
         if (venvPython.exists()) {
             return venvPython.getAbsolutePath();
         }
-        
+
         // Если venv нет, используем системный Python
         return "python";
     }

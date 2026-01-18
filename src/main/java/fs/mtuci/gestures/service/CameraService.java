@@ -39,7 +39,7 @@ public class CameraService {
 
             if (bgr == null) bgr = new Mat();
             if (rgb == null) rgb = new Mat();
-            
+
             capture = new VideoCapture();
             if(!capture.open(cameraIndex)) {
                 logger.error("Не удалось открыть камеру №" , cameraIndex);
