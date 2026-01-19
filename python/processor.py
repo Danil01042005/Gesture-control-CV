@@ -40,13 +40,11 @@ USE_PALM_CENTER = True
 # Настройки фильтрации
 CONFIDENCE_THRESHOLD = 0.97
 IGNORE_IDLE = True
-DETECTION_COOLDOWN = 2.0
+DETECTION_COOLDOWN = 1.0  # Пауза ПОСЛЕ успешной детекции
 
-# НОВОЕ: Настройки фильтра стабильности для отсеивания вспомогательных движений
-STABILITY_REQUIRED = 3  # Жест должен быть распознан N раз подряд
-STABILITY_WINDOW = 5  # Проверяем последние N предсказаний
-MIN_STABILITY_CONFIDENCE = 0.98  # Минимальная уверенность для зачета в стабильности
-
+# НАСТРОЙКИ СТАБИЛИЗАЦИИ
+STABILIZATION_CONSECUTIVE_FRAMES = 4  # Количество последовательных одинаковых предсказаний
+CONFIDENCE_THRESHOLD_STABLE = 0.95  # Порог уверенности для стабилизации
 
 def extract_enhanced_features(landmarks, prev_coords=None):
     """Извлекает улучшенные признаки"""
@@ -82,83 +80,96 @@ def extract_enhanced_features(landmarks, prev_coords=None):
     
     return np.array(features, dtype=np.float32), relative_coords
 
+def invert_rotate_gestures(gesture):
+    """
+    Инвертирует ТОЛЬКО жесты поворотов из-за зеркального отображения камеры
+    Свайпы оставляем без изменений
+    """
+    if gesture == "rotateLeft":
+        return "rotateRight"
+    elif gesture == "rotateRight":
+        return "rotateLeft"
+    else:
+        return gesture  # Все остальные жесты (включая свайпы) остаются как есть
+
 # MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
 
-# Буфер кадров
+# Буфер кадров для модели
 buffer = deque(maxlen=SEQ_LENGTH)
 prev_frame_coords = None
 
-# НОВОЕ: История предсказаний для проверки стабильности
-prediction_history = deque(maxlen=STABILITY_WINDOW)  # Хранит последние N предсказаний
+# Структуры для стабилизации
+consecutive_count = 0  # Счетчик последовательных одинаковых предсказаний
+current_gesture_candidate = None  # Кандидат на жест
 
-# Флаг для контроля детекции
+# Флаги для контроля детекции
 detection_allowed = True
 cooldown_timer = None
-last_gesture = ""
-last_confidence = 0.0
+last_detection_time = 0
 
 def reset_detection_allowed():
     """Сбрасывает флаг разрешения детекции через заданное время"""
-    global detection_allowed
+    global detection_allowed, buffer, prev_frame_coords
+    global consecutive_count, current_gesture_candidate
+    
     time.sleep(DETECTION_COOLDOWN)
+    
+    # ВОССТАНАВЛИВАЕМ все буферы и состояния
+    buffer.clear()
+    prev_frame_coords = None
+    consecutive_count = 0
+    current_gesture_candidate = None
+    
+    # Разрешаем детекцию заново
     detection_allowed = True
 
-def check_gesture_stability(predicted_gesture, confidence_value):
+def check_consecutive_predictions(predicted_gesture, confidence_value):
     """
-    НОВОЕ: Проверяет стабильность жеста - должен быть распознан несколько раз подряд
-    
-    Args:
-        predicted_gesture: Предсказанный жест
-        confidence_value: Уверенность модели
-        
-    Returns:
-        bool: True если жест стабилен, False если это вспомогательное движение
+    Проверяет, есть ли достаточное количество последовательных одинаковых предсказаний
     """
-    # Добавляем текущее предсказание в историю
-    prediction_history.append({
-        'gesture': predicted_gesture,
-        'confidence': confidence_value,
-        'time': time.time()
-    })
+    global consecutive_count, current_gesture_candidate
     
-    # Если истории недостаточно, считаем жест нестабильным
-    if len(prediction_history) < STABILITY_REQUIRED:
+    if confidence_value < CONFIDENCE_THRESHOLD_STABLE:
+        consecutive_count = 0
+        current_gesture_candidate = None
         return False
     
-    # Проверяем последние N предсказаний
-    recent_predictions = list(prediction_history)[-STABILITY_WINDOW:]
+    if predicted_gesture.lower() == "idle" and IGNORE_IDLE:
+        consecutive_count = 0
+        current_gesture_candidate = None
+        return False
     
-    # Считаем, сколько раз подряд был распознан этот жест
-    consecutive_count = 0
-    for pred in reversed(recent_predictions):
-        if (pred['gesture'] == predicted_gesture and 
-            pred['confidence'] >= MIN_STABILITY_CONFIDENCE):
-            consecutive_count += 1
-        else:
-            break  # Прерываем, если жест изменился
+    # Корректируем ТОЛЬКО повороты для проверки стабильности
+    corrected_gesture = invert_rotate_gestures(predicted_gesture)
     
-    # Жест считается стабильным, если он распознан N раз подряд
-    is_stable = consecutive_count >= STABILITY_REQUIRED
+    # Если жесты совпадают, увеличиваем счетчик
+    if current_gesture_candidate == corrected_gesture:
+        consecutive_count += 1
+    else:
+        # Начинаем отсчет для нового жеста
+        current_gesture_candidate = corrected_gesture
+        consecutive_count = 1
     
-    return is_stable
+    # Проверяем, достигли ли мы нужного количества последовательных кадров
+    if consecutive_count >= STABILIZATION_CONSECUTIVE_FRAMES:
+        return True
+    
+    return False
 
 cap = cv2.VideoCapture(0)
-
-print("Запущено распознавание жестов")
-print("Нажмите 'q' для выхода")
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         continue
 
-    frame = cv2.flip(frame, 1)
+    frame = cv2.flip(frame, 1)  # Горизонтальное отражение (зеркало)
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb)
 
-    # Обновляем буфер
+    # Обновляем буфер для модели (ВСЕГДА, независимо от detection_allowed)
     hand_detected = results.multi_hand_landmarks is not None
     
     if hand_detected:
@@ -184,9 +195,9 @@ while cap.isOpened():
         else:
             buffer.append(np.zeros(FEATURE_DIM, dtype=np.float32))
 
-    # Делаем предсказание только если разрешено и буфер полон
-    if len(buffer) == SEQ_LENGTH and detection_allowed:
-        # Предсказание
+    # Основная логика детекции с улучшенной системой пауз
+    if detection_allowed and hand_detected and len(buffer) == SEQ_LENGTH:
+        # Предсказание для текущего кадра
         seq = torch.tensor(np.array(buffer, dtype=np.float32), dtype=torch.float32).unsqueeze(0).to(device)
         with torch.no_grad():
             lengths = torch.tensor([SEQ_LENGTH], dtype=torch.long).to(device)
@@ -197,46 +208,40 @@ while cap.isOpened():
             pred_class = pred.item()
             predicted_gesture = label_encoder.inverse_transform([pred_class])[0]
             
-            # Базовые проверки
-            should_show = True
-            
+            # Проверяем базовые условия
             if confidence_value < CONFIDENCE_THRESHOLD:
-                should_show = False
-            
-            if not hand_detected:
-                should_show = False
+                continue
             
             if IGNORE_IDLE and predicted_gesture.lower() == "idle":
-                should_show = False
+                continue
             
-            # НОВОЕ: Проверка стабильности жеста
-            if should_show:
-                is_stable = check_gesture_stability(predicted_gesture, confidence_value)
+            # Проверяем последовательные предсказания (система стабилизации)
+            if check_consecutive_predictions(predicted_gesture, confidence_value):
+                # УСПЕШНАЯ ДЕТЕКЦИЯ!
+                last_detection_time = time.time()
                 
-                if is_stable:
-                    # Жест стабилен - выводим результат в поток
-                    last_gesture = predicted_gesture
-                    last_confidence = confidence_value
-                    
-                    result = {
-                        "gesture": predicted_gesture,
-                        "confidence": float(confidence_value * 100),
-                        "timestamp": time.time()
-                    }
-                    print(json.dumps(result))
-                    sys.stdout.flush()
-                    
-                    # Блокируем детекцию и запускаем таймер
-                    detection_allowed = False
-                    buffer.clear()
-                    prev_frame_coords = None
-                    prediction_history.clear()  # Очищаем историю после успешной детекции
-                    
-                    cooldown_timer = threading.Thread(target=reset_detection_allowed, daemon=True)
-                    cooldown_timer.start()
+                # Корректируем ТОЛЬКО повороты перед выводом
+                corrected_gesture = invert_rotate_gestures(predicted_gesture)
+                
+                # Выводим результат в JSON формате
+                result = {
+                    "gesture": corrected_gesture,
+                    "confidence": float(confidence_value * 100),
+                    "timestamp": time.time()
+                }
+                print(json.dumps(result))
+                sys.stdout.flush()
+                
+                # Блокируем детекцию на время коолдауна
+                detection_allowed = False
+                
+                # Запускаем таймер разблокировки
+                cooldown_timer = threading.Thread(target=reset_detection_allowed, daemon=True)
+                cooldown_timer.start()
+    
+    # Обработка нажатия 'q' для выхода
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 cap.release()
 cv2.destroyAllWindows()
-    
-
-    
