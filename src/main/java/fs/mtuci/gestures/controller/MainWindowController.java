@@ -16,7 +16,6 @@ import fs.mtuci.gestures.service.SystemControlService;
 
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -134,10 +133,6 @@ public class MainWindowController implements Initializable {
             case "big_finger_down":
                 actionLabel.setText("Действие: Громкость −");
                 triggerAction("volume_down", systemControlService::volumeDown);
-                break;
-            case "palm_mute":
-                actionLabel.setText("Действие: Mute");
-                triggerAction("volume_mute", systemControlService::volumeMute);
                 break;
             // Swipe жесты для перемотки
             case "swipeleft":
