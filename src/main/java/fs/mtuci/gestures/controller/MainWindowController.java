@@ -138,6 +138,7 @@ public class MainWindowController implements Initializable {
             case "palm_mute":
                 actionLabel.setText("Действие: Mute");
                 triggerAction("volume_mute", systemControlService::volumeMute);
+                break;
             // Swipe жесты для перемотки
             case "swipeleft":
                 actionLabel.setText("Действие: Перемотка назад");

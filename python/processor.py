@@ -40,11 +40,11 @@ USE_PALM_CENTER = True
 # Настройки фильтрации
 CONFIDENCE_THRESHOLD = 0.97
 IGNORE_IDLE = True
-DETECTION_COOLDOWN = 2.0
+DETECTION_COOLDOWN = 0.7
 
 # НОВОЕ: Настройки фильтра стабильности для отсеивания вспомогательных движений
-STABILITY_REQUIRED = 3  # Жест должен быть распознан N раз подряд
-STABILITY_WINDOW = 5  # Проверяем последние N предсказаний
+STABILITY_REQUIRED = 2  # Жест должен быть распознан N раз подряд
+STABILITY_WINDOW = 2  # Проверяем последние N предсказаний
 MIN_STABILITY_CONFIDENCE = 0.98  # Минимальная уверенность для зачета в стабильности
 
 
@@ -82,7 +82,8 @@ def extract_enhanced_features(landmarks, prev_coords=None):
     
     return np.array(features, dtype=np.float32), relative_coords
 
-# MediaPipe
+# MediaPipe - используем старый API (требует mediapipe < 0.10.22)
+# Для 0.10.31 нужна модель .task файл - откати версию до 0.10.21
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
 

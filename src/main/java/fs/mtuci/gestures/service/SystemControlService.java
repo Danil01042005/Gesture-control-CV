@@ -28,6 +28,7 @@ public class SystemControlService {
     private static final byte VK_UP = (byte) 0x26;
     private static final byte VK_DOWN = (byte) 0x28;
     private static final byte VK_MENU = (byte) 0x12; // Alt key
+    // Мультимедийные коды не используем для браузера — остаемся на стрелках
     private static final byte VK_PRIOR = (byte) 0x21; // Page Up
     private static final byte VK_NEXT = (byte) 0x22; // Page Down
     private static final byte VK_VOLUME_UP = (byte) 0xAF;
@@ -145,7 +146,7 @@ public class SystemControlService {
     }
 
     /**
-     * Перемотка назад (влево) через JNA с Alt для избежания скролла
+     * Перемотка назад: отправляем стрелку Left (HTML5-плееры в браузере)
      */
     public void seekBackward() {
         long now = System.currentTimeMillis();
@@ -155,33 +156,21 @@ public class SystemControlService {
         lastSeekTime = now;
         
         try {
-            logger.info("ПЕРЕМОТКА НАЗАД: отправка Alt+LEFT (без скролла)");
+            logger.info("ПЕРЕМОТКА НАЗАД: отправка LEFT");
             
-            // Используем Alt+Left для перемотки без горизонтального скролла
-            // Нажимаем Alt
-            WinUser32.INSTANCE.keybd_event(VK_MENU, (byte) 0, 0, 0);
-            Thread.sleep(20);
-            // Нажимаем Left
+            // Обычная стрелка влево — стандартный seek в HTML5-плеерах
             WinUser32.INSTANCE.keybd_event(VK_LEFT, (byte) 0, 0, 0);
             Thread.sleep(50);
-            // Отпускаем Left
             WinUser32.INSTANCE.keybd_event(VK_LEFT, (byte) 0, KEYEVENTF_KEYUP, 0);
-            Thread.sleep(20);
-            // Отпускаем Alt
-            WinUser32.INSTANCE.keybd_event(VK_MENU, (byte) 0, KEYEVENTF_KEYUP, 0);
             
-            logger.info("ПЕРЕМОТКА НАЗАД ВЫПОЛНЕНА (Alt+LEFT отправлена через JNA)");
+            logger.info("ПЕРЕМОТКА НАЗАД ВЫПОЛНЕНА (LEFT через JNA)");
         } catch (UnsatisfiedLinkError e) {
             logger.error("JNA недоступен, пробуем Robot", e);
-            // Fallback на Robot
+            // Fallback на Robot (используем стрелку влево)
             if (robot != null) {
-                robot.keyPress(KeyEvent.VK_ALT);
-                robot.delay(20);
                 robot.keyPress(KeyEvent.VK_LEFT);
-                robot.delay(50);
+                robot.delay(60);
                 robot.keyRelease(KeyEvent.VK_LEFT);
-                robot.delay(20);
-                robot.keyRelease(KeyEvent.VK_ALT);
             }
         } catch (Exception e) {
             logger.error("ОШИБКА при перемотке назад", e);
@@ -189,7 +178,7 @@ public class SystemControlService {
     }
 
     /**
-     * Перемотка вперед (вправо) через JNA с Alt для избежания скролла
+     * Перемотка вперед: отправляем стрелку Right (HTML5-плееры в браузере)
      */
     public void seekForward() {
         long now = System.currentTimeMillis();
@@ -199,33 +188,21 @@ public class SystemControlService {
         lastSeekTime = now;
         
         try {
-            logger.info("ПЕРЕМОТКА ВПЕРЕД: отправка Alt+RIGHT (без скролла)");
+            logger.info("ПЕРЕМOТКА ВПЕРЕД: отправка RIGHT");
             
-            // Используем Alt+Right для перемотки без горизонтального скролла
-            // Нажимаем Alt
-            WinUser32.INSTANCE.keybd_event(VK_MENU, (byte) 0, 0, 0);
-            Thread.sleep(20);
-            // Нажимаем Right
+            // Обычная стрелка вправо — стандартный seek в HTML5-плеерах
             WinUser32.INSTANCE.keybd_event(VK_RIGHT, (byte) 0, 0, 0);
             Thread.sleep(50);
-            // Отпускаем Right
             WinUser32.INSTANCE.keybd_event(VK_RIGHT, (byte) 0, KEYEVENTF_KEYUP, 0);
-            Thread.sleep(20);
-            // Отпускаем Alt
-            WinUser32.INSTANCE.keybd_event(VK_MENU, (byte) 0, KEYEVENTF_KEYUP, 0);
             
-            logger.info("ПЕРЕМОТКА ВПЕРЕД ВЫПОЛНЕНА (Alt+RIGHT отправлена через JNA)");
+            logger.info("ПЕРЕМОТКА ВПЕРЕД ВЫПОЛНЕНА (RIGHT через JNA)");
         } catch (UnsatisfiedLinkError e) {
             logger.error("JNA недоступен, пробуем Robot", e);
-            // Fallback на Robot
+            // Fallback на Robot (используем стрелку вправо)
             if (robot != null) {
-                robot.keyPress(KeyEvent.VK_ALT);
-                robot.delay(20);
                 robot.keyPress(KeyEvent.VK_RIGHT);
-                robot.delay(50);
+                robot.delay(60);
                 robot.keyRelease(KeyEvent.VK_RIGHT);
-                robot.delay(20);
-                robot.keyRelease(KeyEvent.VK_ALT);
             }
         } catch (Exception e) {
             logger.error("ОШИБКА при перемотке вперед", e);

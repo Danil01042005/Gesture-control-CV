@@ -149,13 +149,7 @@ public class PythonGestureService {
      * Находит Python интерпретатор
      */
     private String findPythonExecutable() {
-        // Сначала пробуем venv
-        File venvPython = new File(".venv/Scripts/python.exe");
-        if (venvPython.exists()) {
-            return venvPython.getAbsolutePath();
-        }
-        
-        // Если venv нет, используем системный Python
+        // Используем системный Python
         return "python";
     }
 
