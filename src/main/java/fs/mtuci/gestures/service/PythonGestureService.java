@@ -124,9 +124,10 @@ public class PythonGestureService {
                         
                         // Вызываем callback только для уверенных распознаваний
                         if (confidence > 99.0) {
+                            logger.info("Принят жест: {} (уверенность: {}%)", gesture, confidence);
                             callback.accept(result);
                         } else {
-                            logger.debug("Низкая уверенность ({}), пропускаем жест: {}", confidence, gesture);
+                            logger.debug("Низкая уверенность ({}%), пропускаем жест: {}", confidence, gesture);
                         }
                         
                     } catch (Exception e) {

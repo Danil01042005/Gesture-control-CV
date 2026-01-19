@@ -95,6 +95,7 @@ public class MainWindowController implements Initializable {
         logger.info("Остановка управления жестами");
         
         pythonGestureService.stopGestureRecognition();
+        cameraService.release(); // Освобождаем камеру
         
         startButton.setDisable(false);
         stopButton.setDisable(true);
@@ -109,7 +110,10 @@ public class MainWindowController implements Initializable {
         if (gesture == null) {
             return;
         }
-        switch (gesture.toLowerCase(Locale.ROOT)) {
+        String gestureLower = gesture.toLowerCase().trim();
+        logger.info("Обработка жеста: '{}' (нормализован: '{}')", gesture, gestureLower);
+
+        switch (gestureLower) {
             case "palm":
                 actionLabel.setText("Действие: Стоп");
                 break;
@@ -134,8 +138,41 @@ public class MainWindowController implements Initializable {
             case "palm_mute":
                 actionLabel.setText("Действие: Mute");
                 triggerAction("volume_mute", systemControlService::volumeMute);
+            // Swipe жесты для перемотки
+            case "swipeleft":
+                actionLabel.setText("Действие: Перемотка назад");
+                logger.info("Выполняется перемотка назад");
+                triggerAction("seek_backward", systemControlService::seekBackward);
+                break;
+            case "swiperight":
+                actionLabel.setText("Действие: Перемотка вперед");
+                logger.info("Выполняется перемотка вперед");
+                triggerAction("seek_forward", systemControlService::seekForward);
+                break;
+            // Swipe жесты для скролла
+            case "swipeup":
+                actionLabel.setText("Действие: Скролл вверх");
+                logger.info("Выполняется скролл вверх");
+                triggerAction("scroll_up", systemControlService::scrollUp);
+                break;
+            case "swipedown":
+                actionLabel.setText("Действие: Скролл вниз");
+                logger.info("Выполняется скролл вниз");
+                triggerAction("scroll_down", systemControlService::scrollDown);
+                break;
+            // Rotate жесты для управления громкостью
+            case "rotateleft":
+                actionLabel.setText("Действие: Уменьшить громкость");
+                logger.info("Выполняется уменьшение громкости");
+                triggerAction("volume_down", systemControlService::volumeDown);
+                break;
+            case "rotateright":
+                actionLabel.setText("Действие: Увеличить громкость");
+                logger.info("Выполняется увеличение громкости");
+                triggerAction("volume_up", systemControlService::volumeUp);
                 break;
             default:
+                logger.warn("Неизвестный жест: '{}' (нормализован: '{}')", gesture, gestureLower);
                 actionLabel.setText("Действие: " + gesture);
         }
     }

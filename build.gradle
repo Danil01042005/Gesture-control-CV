@@ -52,6 +52,10 @@ dependencies {
 	// Математические операции
 	implementation 'org.apache.commons:commons-math3:3.6.1'
 	
+	// JNA для работы с Windows API
+	implementation 'net.java.dev.jna:jna:5.14.0'
+	implementation 'net.java.dev.jna:jna-platform:5.14.0'
+	
 	// Тестирование
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

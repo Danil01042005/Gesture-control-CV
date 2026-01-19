@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import fs.mtuci.gestures.service.CameraService;
 
 public class GestureControlApp extends Application {
 
@@ -23,6 +24,17 @@ public class GestureControlApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        // Освобождаем камеру перед закрытием приложения
+        if (springContext != null) {
+            try {
+                CameraService cameraService = springContext.getBean(CameraService.class);
+                if (cameraService != null) {
+                    cameraService.release();
+                }
+            } catch (Exception e) {
+                // Игнорируем ошибки при освобождении
+            }
+        }
         springContext.close();
     }
 

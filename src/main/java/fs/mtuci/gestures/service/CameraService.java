@@ -37,12 +37,19 @@ public class CameraService {
                 logger.info("OpenCV загружен успешно");
             }
 
+            // Если камера уже открыта, сначала освобождаем её
+            if (capture != null && capture.isOpened()) {
+                logger.info("Камера уже открыта, освобождаем перед повторной инициализацией");
+                capture.release();
+                Thread.sleep(200); // Даем время системе освободить камеру
+            }
+
             if (bgr == null) bgr = new Mat();
             if (rgb == null) rgb = new Mat();
             
             capture = new VideoCapture();
             if(!capture.open(cameraIndex)) {
-                logger.error("Не удалось открыть камеру №" , cameraIndex);
+                logger.error("Не удалось открыть камеру №{}", cameraIndex);
                 return false;
             }
             capture.set(Videoio.CAP_PROP_FRAME_WIDTH, width);
@@ -92,10 +99,13 @@ public class CameraService {
 
     public void release() {
         try {
-            if (capture != null) {
+            if (capture != null && capture.isOpened()) {
                 capture.release();
-                capture = null;
+                // Даем время системе освободить камеру
+                Thread.sleep(100);
             }
+            capture = null;
+            
             if (bgr != null) {
                 bgr.release();
                 bgr = null;
