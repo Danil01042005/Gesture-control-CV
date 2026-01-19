@@ -1,6 +1,6 @@
 # Compiled class file
 *.class
-
+opencv/
 # Log file
 *.log
 
@@ -38,6 +38,17 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+.venv/
+venv/
+env/
 
 # Eclipse
 .apt_generated
