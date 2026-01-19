@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'fs.mtuci'
@@ -22,34 +23,59 @@ configurations {
 
 repositories {
 	mavenCentral()
+    maven { url 'https://frcmaven.wpi.edu/artifactory/release/' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
 	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	
 	// JavaFX для GUI
 	implementation 'org.openjfx:javafx-controls:21'
 	implementation 'org.openjfx:javafx-fxml:21'
+    implementation 'org.openjfx:javafx-base:21'
+    implementation 'org.openjfx:javafx-graphics:21'
 	
 	// DJL для YOLO
-	implementation 'ai.djl:api:0.21.0'
+	implementation 'ai.djl:api:0.31.1'
 	implementation 'ai.djl.pytorch:pytorch-engine:0.21.0'
 	implementation 'ai.djl.pytorch:pytorch-native-cpu:1.13.1'
 	
 	// OpenCV для камеры
-	implementation 'org.openpnp:opencv:4.8.0-0'
+    implementation 'edu.wpi.first.thirdparty.frc2025.opencv:opencv-java:4.10.0-3'
+
+    // Управление системными клавишами (Win32)
+    implementation 'net.java.dev.jna:jna-platform:5.14.0'
 	
 	// Математические операции
 	implementation 'org.apache.commons:commons-math3:3.6.1'
 	
+	// JNA для работы с Windows API
+	implementation 'net.java.dev.jna:jna:5.14.0'
+	implementation 'net.java.dev.jna:jna-platform:5.14.0'
+	
 	// Тестирование
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+task runJavaFX(type: JavaExec) {
+    group = 'application'
+    description = 'Запуск JavaFX приложения'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'fs.mtuci.gestures.GestureControlApp'
+    jvmArgs = [
+        '--module-path', classpath.asPath,
+        '--add-modules', 'javafx.controls,javafx.fxml',
+        '--add-opens', 'java.base/sun.launcher=ALL-UNNAMED',
+        '-Djava.library.path=lib'
+    ]
 }

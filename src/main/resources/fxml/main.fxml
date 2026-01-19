@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="fs.mtuci.gestures.controller.MainWindowController"
+            fx:id="borderPane"
+            stylesheets="@style.css"
+            style="-fx-background-color: linear-gradient(to bottom right, #0d0d1a, #12122b);"
+            prefWidth="520" prefHeight="620">
+
+    <top>
+        <HBox fx:id="titleBar" spacing="0" alignment="CENTER_LEFT"
+              style="-fx-background-color: #0d0d1a; -fx-padding: 10 15;">
+
+            <!-- Название приложения -->
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 5;">
+                <Label text="Gesture Control" style="-fx-text-fill: #a8a6ff; -fx-font-size: 16px; -fx-font-weight: bold;" />
+                <Label text="-" style="-fx-text-fill: #8f8f9f; -fx-font-size: 16px; -fx-font-weight: normal;" />
+                <Label text="Управление жестами" style="-fx-text-fill: #8f8f9f; -fx-font-size: 14px; -fx-font-weight: normal;" />
+            </HBox>
+
+            <!-- Пустое пространство -->
+            <Region HBox.hgrow="ALWAYS" />
+
+            <!-- Кнопки управления окном -->
+            <HBox spacing="5">
+                <Button fx:id="minimizeButton"
+                        onAction="#minimizeWindow"
+                        focusTraversable="false"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #a8a6ff;
+                               -fx-font-size: 18px;
+                               -fx-padding: 0 12;
+                               -fx-min-width: 30;
+                               -fx-min-height: 30;
+                               -fx-border-radius: 15;
+                               -fx-background-radius: 15;
+                               -fx-border-color: transparent;
+                               -fx-border-width: 0;
+                               -fx-cursor: hand;"
+                        text="─" />
+
+                <Button fx:id="closeButton"
+                        onAction="#closeWindow"
+                        focusTraversable="false"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #a8a6ff;
+                               -fx-font-size: 18px;
+                               -fx-padding: 0 12;
+                               -fx-min-width: 30;
+                               -fx-min-height: 30;
+                               -fx-border-radius: 15;
+                               -fx-background-radius: 15;
+                               -fx-border-color: transparent;
+                               -fx-border-width: 0;
+                               -fx-cursor: hand;"
+                        text="✕" />
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- ЦЕНТРАЛЬНАЯ ОБЛАСТЬ -->
+    <center>
+        <VBox spacing="30" alignment="TOP_CENTER" style="-fx-padding: 25;">
+            <!-- Статус приложения -->
+            <VBox spacing="15" style="-fx-background-color: rgba(255,255,255,0.05);
+                                      -fx-padding: 20;
+                                      -fx-background-radius: 12;
+                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 0);"
+                  prefWidth="420">
+
+                <Label text="Статус системы" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
+
+                <VBox spacing="10" style="-fx-padding: 12; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 8;">
+                    <Label text="Состояние распознавания" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="statusLabel" text="Ожидание запуска" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+
+                <VBox spacing="10" style="-fx-padding: 12; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 8;">
+                    <Label text="Распознанный жест" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="gestureLabel" text="—" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+
+                <VBox spacing="10" style="-fx-padding: 12; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 8;">
+                    <Label text="Текущее действие" style="-fx-text-fill: #9ea0ff; -fx-font-size: 13px;" />
+                    <Label fx:id="actionLabel" text="—" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+            </VBox>
+
+            <!-- Кнопка запуска обработки -->
+            <VBox fx:id="buttonContainer" alignment="CENTER">
+                <Button fx:id="controlButton"
+                        onAction="#onControlButtonClick"
+                        styleClass="primary-button"
+                        focusTraversable="false">
+                    <graphic>
+                        <ImageView fx:id="controlButtonIcon" fitWidth="22" fitHeight="22"
+                                   preserveRatio="true"/>
+                    </graphic>
+                </Button>
+            </VBox>
+        </VBox>
+    </center>
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ -->
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-padding: 15;">
+            <Label text="Gesture Control v1.0" style="-fx-text-fill: #6f6f8f; -fx-font-size: 11px;" />
+        </HBox>
+    </bottom>
+
+</BorderPane>
